@@ -14,12 +14,13 @@ so
 ```sh
 bcextr ~/Downloads/album.zip --pattern "~/Music/{artist}/{album}/{title}"
 ```
+Default pattern if not provided is: `./{artist}/{album}/{title}`
 
 The pattern substitution will substitute any parameter it gets in [tinytag](https://github.com/devsnd/tinytag)
 The file extension will also be added to the end of the `pattern` when moving
 the song to it's destination
 
-```
+```py
 tag.album         # album as string
 tag.albumartist   # album artist as string
 tag.artist        # artist name as string
