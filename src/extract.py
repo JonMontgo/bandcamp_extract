@@ -1,43 +1,37 @@
-#!env python3
+import os
 from pathlib import Path
+from tinytag import TinyTag, TinyTagException
 import click
+import zipfile
+import tempfile
+import glob
 
 
 @click.argument("zip_path")
 @click.option(
     "--pattern",
-    default=f"{Path.home()}/Music" + "/{Artist}/{Album}/{Song}"
+    default=f"{Path.home()}/Music" + "/{artist}/{album}/{title}",
 )
 @click.command()
-def extract(zip_path, pattern):
-    click.echo(zip_path)
-    click.echo(pattern)
-
-
-# if __name__ == "__main__":
-#     try:
-#         file_name = sys.argv[1]
-#     except IndexError:
-#         raise Exception("Please provide a file name")
-#     if not zipfile.is_zipfile(file_name):
-#         raise Exception("File must be a .zip and found in directory.")
-
-#     with zipfile.ZipFile(file_name, mode="r") as zfh:
-#         non_songs = []
-#         path_name = ""
-#         for file_name in zfh.namelist():
-#             matched = file_name_re.match(file_name)
-#             if matched is not None:
-#                 artist, album, track_number, song = matched.groups()
-#                 path_name = "%s/Music/%s/%s" % (Path.home(), artist, album)
-#                 if not os.path.exists(path_name):
-#                     os.makedirs(path_name)
-#                 file_bytes = zfh.read(file_name)
-#                 with open("%s/%s %s" % (path_name, track_number, song),
-#                           "wb") as fh:
-#                     fh.write(file_bytes)
-#             else:
-#                 non_songs.append(file_name)
-#         for file_name in non_songs:
-#             zfh.extract(file_name, path=path_name)
-#     os.remove(sys.argv[1])
+def extract(zip_path: str, pattern: str):
+    if not zipfile.is_zipfile(zip_path):
+        raise click.ClickException(f"{zip_path} is not a zip file!")
+    with zipfile.ZipFile(zip_path) as zipfh:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            zipfh.extractall(path=tmpdirname)
+            for potential_song_path in glob.glob(f"{tmpdirname}/*"):
+                try:
+                    song_ext = os.path.splitext(potential_song_path)[1]
+                    potential_song = TinyTag.get(potential_song_path)
+                    substitution_dict = potential_song.as_dict()
+                    new_path = pattern.format(**substitution_dict) + song_ext
+                    if not os.path.exists(os.path.dirname(new_path)):
+                        os.makedirs(os.path.dirname(new_path))
+                    os.rename(potential_song_path, new_path)
+                except TinyTagException:
+                    pass
+                except KeyError as err:
+                    raise click.ClickException(
+                        f"Param {{{err.args[0]}}} in pattern " + 
+                        f"{pattern} not found"
+                    )
