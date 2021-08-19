@@ -12,7 +12,7 @@ in the root of this package
 After installation the extrator's binary is called `bcextr` it can be used like
 so
 ```sh
-bcextr ~/Downloads/album.zip --pattern "~/Music/{artist}/{album}/{title}"
+bcextr ~/Downloads/album.zip --pattern ~/Music/{artist}/{album}/{title}
 ```
 Default pattern if not provided is: `./{artist}/{album}/{title}`
 
