@@ -1,4 +1,5 @@
 import os
+import shutil
 from tinytag import TinyTag, TinyTagException
 import click
 import zipfile
@@ -29,7 +30,7 @@ def extract(zip_path: str, pattern: str):
                     new_path = pattern.format(**substitution_dict) + song_ext
                     if not os.path.exists(os.path.dirname(new_path)):
                         os.makedirs(os.path.dirname(new_path))
-                    os.rename(potential_song_path, new_path)
+                    shutil.move(potential_song_path, new_path)
                 except TinyTagException:
                     pass
                 except KeyError as err:
