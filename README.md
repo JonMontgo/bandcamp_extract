@@ -2,6 +2,13 @@
 This python script extracts all of the songs for a bandcamp album download.
 
 ## Install
+
+### (preferred) from pip
+```sh
+pip install bandcamp_extract
+```
+
+### From github repo
 To install this package simply run
 ```sh
 pip install .
