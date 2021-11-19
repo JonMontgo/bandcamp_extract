@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bandcamp_extract',
-    version='0.1.1',
+    version='0.1.2',
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
