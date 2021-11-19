@@ -10,6 +10,7 @@ setup(
         ]
     },
     install_requires=['click', 'tinytag'],
+    python_requires=">=3.6",
     description=('Extract BandCamp .zip album folders to their appropriate '
                  'place'),
     author='Jonathan Montgomery',
