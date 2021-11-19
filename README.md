@@ -40,5 +40,5 @@ tag.track_total   # total number of tracks as string
 tag.year          # year or data as string
 ```
 
-It is important ot note that any pictures in the zip are not moved to the 
-destination folder
+It is important to note that any files that are not music in the zip are not moved to the 
+destination folder.
