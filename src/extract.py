@@ -5,6 +5,7 @@ import click
 import zipfile
 import tempfile
 import glob
+from .lib import sanitize_dict_values
 
 
 @click.argument("zip_path")
@@ -27,6 +28,7 @@ def extract(zip_path: str, pattern: str):
                     song_ext = os.path.splitext(potential_song_path)[1]
                     potential_song = TinyTag.get(potential_song_path)
                     substitution_dict = potential_song.as_dict()
+                    substitution_dict = sanitize_dict_values(substitution_dict)
                     new_path = pattern.format(**substitution_dict) + song_ext
                     if not os.path.exists(os.path.dirname(new_path)):
                         os.makedirs(os.path.dirname(new_path))
