@@ -1,20 +1,20 @@
+import glob
 import os
 import shutil
-from tinytag import TinyTag, TinyTagException
-import click
-import zipfile
 import tempfile
-import glob
+import zipfile
+
+import click
+from tinytag import TinyTag
+from tinytag.tinytag import TinyTagException
+
 from .lib import sanitize_dict_values
 
 
 @click.argument("zip_path")
 @click.option(
     "--pattern",
-    default=(
-        f"{os.getcwd()}" +
-        "/{artist}/{album}/{title}"
-    ),
+    default=(f"{os.getcwd()}" + "/{artist}/{album}/{title}"),
 )
 @click.command()
 def extract(zip_path: str, pattern: str):
@@ -37,6 +37,5 @@ def extract(zip_path: str, pattern: str):
                     pass
                 except KeyError as err:
                     raise click.ClickException(
-                        f"Param {{{err.args[0]}}} in pattern " +
-                        f"{pattern} not found"
+                        f"Param {{{err.args[0]}}} in pattern " + f"{pattern} not found"
                     )
