@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bandcamp_extract"
-version = "0.1.5"
+version = "0.1.6"
 description = "Extract BandCamp .zip album folders to their appropriate place"
 license = { text = "MIT" }
 authors = [{ name = "Jonathan Montgomery", email = "jonathan.montgo@gmail.com" }]
@@ -21,7 +21,7 @@ dependencies = [
 ]
 
 [project.scripts]
-bcextr = "src.extract:extract"
+bcextr = "bandcamp_extract.extract:extract"
 
 [project.urls]
 Homepage = "https://github.com/JonMontgo/bandcamp_extract"
