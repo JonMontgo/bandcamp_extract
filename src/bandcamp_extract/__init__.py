@@ -1,3 +1,3 @@
-from . import extract
+from .cli import cli
 
-__all__ = ["extract"]
+__all__ = ["cli"]
