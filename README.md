@@ -149,8 +149,9 @@ destination folder.
 Before substitution, every metadata value is run through
 [pathvalidate](https://github.com/thombashi/pathvalidate)'s `replace_symbol` to
 strip characters that would otherwise break the destination path (e.g. `/`,
-`:`, `?`). By default these are removed entirely; pass `--replacement-text` to
-substitute something else instead:
+`:`, `?`). By default these are removed entirely and spaces are left alone;
+pass `--replacement-text` to substitute something else instead, and
+`--strip-spaces` to also replace spaces:
 ```sh
-bcextr extract ~/Downloads/album.zip --pattern ~/Music/{artist}/{album}/{title} --replacement-text "_"
+bcextr extract ~/Downloads/album.zip --pattern ~/Music/{artist}/{album}/{title} --replacement-text "_" --strip-spaces
 ```

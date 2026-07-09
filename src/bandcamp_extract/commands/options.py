@@ -42,3 +42,15 @@ def replacement_text_option(f: Callable[..., Any]) -> Callable[..., Any]:
             "Defaults to removing them."
         ),
     )(f)
+
+
+def strip_spaces_option(f: Callable[..., Any]) -> Callable[..., Any]:
+    return click.option(
+        "--strip-spaces",
+        is_flag=True,
+        default=False,
+        help=(
+            "Also replace spaces in tinytag metadata with --replacement-text "
+            "(spaces are left alone by default)."
+        ),
+    )(f)

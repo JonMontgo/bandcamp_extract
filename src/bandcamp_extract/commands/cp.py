@@ -1,7 +1,7 @@
 import click
 
 from ..extract import copy_to_pattern
-from .options import no_track_padding_option, pattern_option, replacement_text_option
+from .options import no_track_padding_option, pattern_option, replacement_text_option, strip_spaces_option
 
 
 @click.command()
@@ -9,5 +9,12 @@ from .options import no_track_padding_option, pattern_option, replacement_text_o
 @pattern_option
 @no_track_padding_option
 @replacement_text_option
-def cp(src_dir: str, pattern: str, no_track_padding: bool, replacement_text: str) -> None:
-    copy_to_pattern(src_dir, pattern, pad_track_numbers=not no_track_padding, replacement_text=replacement_text)
+@strip_spaces_option
+def cp(src_dir: str, pattern: str, no_track_padding: bool, replacement_text: str, strip_spaces: bool) -> None:
+    copy_to_pattern(
+        src_dir,
+        pattern,
+        pad_track_numbers=not no_track_padding,
+        replacement_text=replacement_text,
+        strip_spaces=strip_spaces,
+    )
