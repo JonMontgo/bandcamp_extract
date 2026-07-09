@@ -15,29 +15,25 @@ pip install .
 ```
 in the root of this package
 
-## Usage
+## Setup
 After installation the extractor's binary is called `bcextr`.
 
 > **Breaking change (0.2.0):** `bcextr` is now a command group. What used to be
 > `bcextr <zip>` is now `bcextr extract <zip>`.
 
-### Extract a zip you already downloaded
-```sh
-bcextr extract ~/Downloads/album.zip --pattern ~/Music/{artist}/{album}/{title}
-```
-Default pattern if not provided is: `./{artist}/{album}/{title}`
+`bcextr extract` works standalone with no setup. The `bcextr api` commands
+pull albums directly from your Bandcamp collection, which requires a one-time
+login first.
 
-### Pull albums straight from your Bandcamp collection
 Bandcamp has no username/password API, so this reuses the same session cookie
-your browser already has after you log in on bandcamp.com. A one-time login
-step is required to hand that cookie to bcextr.
+your browser already has after you log in on bandcamp.com.
 
-#### 1. Get your Bandcamp username
+### 1. Get your Bandcamp username
 This is the name in the URL of your own collection page:
 `https://bandcamp.com/<username>`. You can find it in the account menu on
 bandcamp.com, or from the URL after clicking "Collection".
 
-#### 2. Get your `identity` cookie
+### 2. Get your `identity` cookie
 1. Log in to bandcamp.com in your browser.
 2. Open developer tools (`F12`, or `Cmd+Opt+I` on macOS).
 3. Go to the **Application** tab in Chrome/Edge (**Storage** tab in Firefox),
@@ -49,19 +45,32 @@ This cookie is a live login credential for your account: don't share it,
 paste it into chat tools, or commit it anywhere. bcextr only stores it
 locally in `~/.config/bcextr/session.json` (readable only by you).
 
-#### 3. Log in with bcextr
+### 3. Log in with bcextr
 ```sh
 bcextr api login
 ```
 You'll be prompted for your Bandcamp username and the cookie value from the
 steps above.
 
-#### 4. List your collection
+If your cookie later expires, just re-run `bcextr api login` with a fresh
+value.
+
+## Usage
+
+### `bcextr extract`
+Extract a zip you already downloaded:
+```sh
+bcextr extract ~/Downloads/album.zip --pattern ~/Music/{artist}/{album}/{title}
+```
+Default pattern if not provided is: `./{artist}/{album}/{title}`
+
+### `bcextr api list` / `bcextr api choose`
+List your collection:
 ```sh
 bcextr api list
 ```
 
-#### 5. Pick albums and extract them straight to your library
+Pick albums and extract them straight to your library:
 ```sh
 bcextr api choose --pattern ~/Music/{albumartist}/{album}/{title} --format flac
 ```
@@ -74,9 +83,9 @@ logic as `bcextr extract`.
 (applied to the whole batch) instead.
 
 This relies on Bandcamp's unofficial, undocumented collection API and may
-break if Bandcamp changes it. If your cookie expires, just re-run
-`bcextr api login` with a fresh value.
+break if Bandcamp changes it.
 
+### Pattern substitution
 The pattern substitution will substitute any parameter it gets in [tinytag](https://github.com/devsnd/tinytag)
 The file extension will also be added to the end of the `pattern` when moving
 the song to it's destination
