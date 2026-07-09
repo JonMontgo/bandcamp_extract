@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bandcamp_extract"
-version = "0.4.0"
+version = "0.4.1"
 description = "Extract BandCamp .zip album folders to their appropriate place"
 license = { text = "MIT" }
 authors = [{ name = "Jonathan Montgomery", email = "jonathan.montgo@gmail.com" }]
@@ -20,6 +20,7 @@ dependencies = [
     "tinytag>=2.2.1",
     "requests>=2.31.0",
     "iterfzf>=1.4.0",
+    "pathvalidate>=3.3.1",
 ]
 
 [project.scripts]

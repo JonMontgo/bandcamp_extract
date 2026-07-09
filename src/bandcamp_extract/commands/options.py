@@ -30,3 +30,15 @@ def no_track_padding_option(f: Callable[..., Any]) -> Callable[..., Any]:
             "highest track number in the album (padding is on by default)."
         ),
     )(f)
+
+
+def replacement_text_option(f: Callable[..., Any]) -> Callable[..., Any]:
+    return click.option(
+        "--replacement-text",
+        default="",
+        help=(
+            "Text used to replace path-unsafe symbols (e.g. /, :, ?) found in "
+            "tinytag metadata before it's substituted into the pattern. "
+            "Defaults to removing them."
+        ),
+    )(f)

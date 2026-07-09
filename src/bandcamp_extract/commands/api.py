@@ -8,7 +8,7 @@ from iterfzf import iterfzf
 from ..bandcamp import BandcampClient, load_session, save_session
 from ..bandcamp.client import DOWNLOAD_FORMATS
 from ..extract import extract_zip
-from .options import no_track_padding_option, pattern_option
+from .options import no_track_padding_option, pattern_option, replacement_text_option
 
 
 def _client_from_session() -> BandcampClient:
@@ -50,8 +50,9 @@ def list_() -> None:
 @api.command()
 @pattern_option
 @no_track_padding_option
+@replacement_text_option
 @click.option("--format", "format_", type=click.Choice(DOWNLOAD_FORMATS), default=None)
-def choose(pattern: str, no_track_padding: bool, format_: str | None) -> None:
+def choose(pattern: str, no_track_padding: bool, replacement_text: str, format_: str | None) -> None:
     client = _client_from_session()
     fan_id = client.get_fan_id()
     items = client.list_collection(fan_id)
@@ -79,4 +80,4 @@ def choose(pattern: str, no_track_padding: bool, format_: str | None) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             zip_path = os.path.join(tmpdir, "album.zip")
             client.download_zip(link, zip_path)
-            extract_zip(zip_path, pattern, pad_track_numbers=not no_track_padding)
+            extract_zip(zip_path, pattern, pad_track_numbers=not no_track_padding, replacement_text=replacement_text)

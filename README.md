@@ -144,3 +144,13 @@ tag.year          # year or data as string
 It is important to note that any files that are not music (in the zip, or in the
 source folder for `bcextr mv`/`bcextr cp`) are not moved or copied to the
 destination folder.
+
+### Path-unsafe symbols in metadata
+Before substitution, every metadata value is run through
+[pathvalidate](https://github.com/thombashi/pathvalidate)'s `replace_symbol` to
+strip characters that would otherwise break the destination path (e.g. `/`,
+`:`, `?`). By default these are removed entirely; pass `--replacement-text` to
+substitute something else instead:
+```sh
+bcextr extract ~/Downloads/album.zip --pattern ~/Music/{artist}/{album}/{title} --replacement-text "_"
+```
