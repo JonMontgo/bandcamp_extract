@@ -85,6 +85,13 @@ logic as `bcextr extract`.
 This relies on Bandcamp's unofficial, undocumented collection API and may
 break if Bandcamp changes it.
 
+### `bcextr mv`
+Reorganize an existing folder of music (searched recursively, however deep the
+files are nested) into a pattern-based structure:
+```sh
+bcextr mv ~/Music --pattern ~/New_Music/{albumartist}/{album}/{title}
+```
+
 ### Pattern substitution
 The pattern substitution will substitute any parameter it gets in [tinytag](https://github.com/devsnd/tinytag)
 The file extension will also be added to the end of the `pattern` when moving
@@ -110,5 +117,5 @@ tag.track_total   # total number of tracks as string
 tag.year          # year or data as string
 ```
 
-It is important to note that any files that are not music in the zip are not moved to the 
-destination folder.
+It is important to note that any files that are not music (in the zip, or in the
+source folder for `bcextr mv`) are not moved to the destination folder.
