@@ -5,7 +5,7 @@ from .options import no_track_padding_option, pattern_option
 
 
 @click.command()
-@click.argument("zip_path")
+@click.argument("zip_path", type=click.Path(dir_okay=False))
 @pattern_option
 @no_track_padding_option
 def extract(zip_path: str, pattern: str, no_track_padding: bool) -> None:

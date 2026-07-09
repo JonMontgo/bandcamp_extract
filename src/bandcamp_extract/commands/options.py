@@ -10,6 +10,7 @@ DEFAULT_PATTERN = f"{os.getcwd()}/{{artist}}/{{album}}/{{title}}"
 def pattern_option(f: Callable[..., Any]) -> Callable[..., Any]:
     return click.option(
         "--pattern",
+        type=click.Path(file_okay=False),
         default=DEFAULT_PATTERN,
         help=(
             "Destination path pattern, substituted with tinytag fields "

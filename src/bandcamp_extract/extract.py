@@ -4,6 +4,7 @@ import os
 import shutil
 import tempfile
 import zipfile
+from collections.abc import Callable
 from typing import Any
 
 import click
@@ -31,7 +32,12 @@ def _max_track_digits(song_paths: list[str]) -> int | None:
     return len(str(max(track_numbers))) if track_numbers else None
 
 
-def move_to_pattern(root_dir: str, pattern: str, pad_track_numbers: bool = True) -> None:
+def _transfer_to_pattern(
+    root_dir: str,
+    pattern: str,
+    pad_track_numbers: bool,
+    transfer: Callable[[str, str], Any],
+) -> None:
     song_paths = _collect_song_paths(root_dir)
     max_track_digits = _max_track_digits(song_paths) if pad_track_numbers else None
 
@@ -46,11 +52,19 @@ def move_to_pattern(root_dir: str, pattern: str, pad_track_numbers: bool = True)
             new_path = pattern.format(**substitution_dict) + song_ext
             if not os.path.exists(os.path.dirname(new_path)):
                 os.makedirs(os.path.dirname(new_path))
-            shutil.move(potential_song_path, new_path)
+            transfer(potential_song_path, new_path)
         except TinyTagException:
             pass
         except KeyError as err:
             raise click.ClickException(f"Param {{{err.args[0]}}} in pattern {pattern} not found") from err
+
+
+def move_to_pattern(root_dir: str, pattern: str, pad_track_numbers: bool = True) -> None:
+    _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.move)
+
+
+def copy_to_pattern(root_dir: str, pattern: str, pad_track_numbers: bool = True) -> None:
+    _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.copy2)
 
 
 def extract_zip(zip_path: str, pattern: str, pad_track_numbers: bool = True) -> None:

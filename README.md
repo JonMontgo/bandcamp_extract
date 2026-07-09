@@ -55,6 +55,28 @@ steps above.
 If your cookie later expires, just re-run `bcextr api login` with a fresh
 value.
 
+### Shell completion (optional)
+`bcextr` is built on [Click](https://click.palletsprojects.com/), which
+provides tab-completion for subcommands (`extract`, `api`, `mv`, etc.) and
+file/directory paths (including for `--pattern`, which completes like a
+regular folder path). Add the line for your shell to its startup file, then
+restart your shell (or `source` the file):
+
+**bash** (`~/.bashrc`):
+```sh
+eval "$(_BCEXTR_COMPLETE=bash_source bcextr)"
+```
+
+**zsh** (`~/.zshrc`):
+```sh
+eval "$(_BCEXTR_COMPLETE=zsh_source bcextr)"
+```
+
+**fish**: generate the completion file once (no eval-on-startup needed):
+```sh
+_BCEXTR_COMPLETE=fish_source bcextr > ~/.config/fish/completions/bcextr.fish
+```
+
 ## Usage
 
 ### `bcextr extract`
@@ -85,11 +107,13 @@ logic as `bcextr extract`.
 This relies on Bandcamp's unofficial, undocumented collection API and may
 break if Bandcamp changes it.
 
-### `bcextr mv`
+### `bcextr mv` / `bcextr cp`
 Reorganize an existing folder of music (searched recursively, however deep the
-files are nested) into a pattern-based structure:
+files are nested) into a pattern-based structure. `mv` moves the files (the
+originals are gone); `cp` copies them, leaving the originals in place:
 ```sh
 bcextr mv ~/Music --pattern ~/New_Music/{albumartist}/{album}/{title}
+bcextr cp ~/Music --pattern ~/New_Music/{albumartist}/{album}/{title}
 ```
 
 ### Pattern substitution
@@ -118,4 +142,5 @@ tag.year          # year or data as string
 ```
 
 It is important to note that any files that are not music (in the zip, or in the
-source folder for `bcextr mv`) are not moved to the destination folder.
+source folder for `bcextr mv`/`bcextr cp`) are not moved or copied to the
+destination folder.
