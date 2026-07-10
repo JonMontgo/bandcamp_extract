@@ -2,7 +2,7 @@
 
 Download and organize your bandcamp library with ease!
 
-![Made with VHS](https://vhs.charm.sh/vhs-6V0ao9WFLKcLZp3AlJ3vLn.gif)
+![Made with VHS](https://vhs.charm.sh/vhs-530Ye82ukIPq9ra4r8hDGf.gif)
 
 ## Install
 
