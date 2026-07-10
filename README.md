@@ -1,5 +1,8 @@
-# Band Camp Album Extractor
-This python script extracts all of the songs for a bandcamp album download.
+# BandCamp Album Extractor
+
+Download and organize your bandcamp library with ease!
+
+![Made with VHS](https://vhs.charm.sh/vhs-6V0ao9WFLKcLZp3AlJ3vLn.gif)
 
 ## Install
 
