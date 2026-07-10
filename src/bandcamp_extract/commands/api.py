@@ -44,7 +44,10 @@ def list_() -> None:
     fan_id = client.get_fan_id()
     items = client.list_collection(fan_id)
     for item in items:
-        click.echo(_label(item))
+        label = _label(item)
+        if not item.get("redownload_url"):
+            label += " [no download]"
+        click.echo(label)
 
 
 @api.command()
@@ -66,6 +69,10 @@ def choose(
     if not items:
         raise click.ClickException("Your collection is empty.")
 
+    items = [item for item in items if item.get("redownload_url")]
+    if not items:
+        raise click.ClickException("No downloadable items in your collection.")
+
     labels_to_items = {_label(item): item for item in items}
     selected_labels = iterfzf(labels_to_items.keys(), multi=True)
     if not selected_labels:
@@ -79,11 +86,7 @@ def choose(
     for label in selected_labels:
         item = labels_to_items[label]
         click.echo(f"Downloading {label} ({format_})...")
-        redownload_url = item.get("redownload_url")
-        if not redownload_url:
-            click.echo(f"Skipping {label}: no download URL available.", err=True)
-            continue
-        link = client.get_download_link(redownload_url, format_)
+        link = client.get_download_link(item["redownload_url"], format_)
         with tempfile.TemporaryDirectory() as tmpdir:
             zip_path = os.path.join(tmpdir, "album.zip")
             client.download_zip(link, zip_path)
