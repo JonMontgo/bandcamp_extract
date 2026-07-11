@@ -27,7 +27,8 @@ def no_track_padding_option(f: Callable[..., Any]) -> Callable[..., Any]:
         default=False,
         help=(
             "Disable zero-padding the track number to the width of the "
-            "highest track number in the album (padding is on by default)."
+            "highest track number in the album, minimum 2 digits "
+            "(padding is on by default)."
         ),
     )(f)
 

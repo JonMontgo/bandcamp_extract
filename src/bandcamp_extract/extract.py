@@ -29,7 +29,7 @@ def _max_track_digits(song_paths: list[str]) -> int | None:
             if value is not None:
                 with contextlib.suppress(TypeError, ValueError):
                     track_numbers.append(int(value))
-    return len(str(max(track_numbers))) if track_numbers else None
+    return max(2, len(str(max(track_numbers)))) if track_numbers else None
 
 
 def _transfer_to_pattern(

@@ -13,7 +13,12 @@ from .options import no_track_padding_option, pattern_option, replacement_text_o
 
 def _client_from_session() -> BandcampClient:
     session = load_session()
-    return BandcampClient(session["username"], session["identity_cookie"])
+    client = BandcampClient(session["username"], session["identity_cookie"])
+    try:
+        client.check_session()
+    except Exception as err:
+        raise click.ClickException(str(err)) from err
+    return client
 
 
 def _label(item: dict[str, Any]) -> str:
@@ -32,6 +37,7 @@ def login(username: str, identity_cookie: str) -> None:
     client = BandcampClient(username, identity_cookie)
     try:
         client.get_fan_id()
+        client.check_session()
     except Exception as err:
         raise click.ClickException(f"Login failed: {err}") from err
     save_session(username, identity_cookie)
@@ -71,7 +77,11 @@ def choose(
 
     items = [item for item in items if item.get("redownload_url")]
     if not items:
-        raise click.ClickException("No downloadable items in your collection.")
+        raise click.ClickException(
+            "No downloadable items in your collection. If you expected some, your "
+            "session may not have full download rights — try logging in again with "
+            "a fresh identity cookie via `bcextr api login`."
+        )
 
     labels_to_items = {_label(item): item for item in items}
     selected_labels = iterfzf(labels_to_items.keys(), multi=True)

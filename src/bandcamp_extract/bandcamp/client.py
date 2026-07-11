@@ -6,6 +6,7 @@ import time
 import requests
 
 PAGEDATA_RE = re.compile(r'<div id="pagedata" data-blob="([^"]*)"')
+COLLECTION_SUMMARY_URL = "https://bandcamp.com/api/fan/2/collection_summary"
 
 DOWNLOAD_FORMATS = [
     "mp3-320",
@@ -49,6 +50,27 @@ class BandcampClient:
             raise BandcampAuthError(
                 "Logged-in fan data not found on page; check your username and cookie."
             ) from err
+
+    def check_session(self) -> None:
+        """Confirm the identity cookie is actually authenticated.
+
+        Unlike get_fan_id (which just scrapes a profile page that renders
+        for anyone, logged in or not), this hits an endpoint that only
+        returns real data for an authenticated session, so it catches a
+        stale/expired cookie before we waste time listing a collection with
+        no working download links.
+        """
+        resp = self.session.get(COLLECTION_SUMMARY_URL)
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("error"):
+            raise BandcampAuthError(
+                "Bandcamp says you're not logged in "
+                f"({data.get('error_message', 'must be logged in')}). "
+                "Your identity cookie is likely stale or expired — log in again "
+                "in your browser, copy the fresh 'identity' cookie value, and "
+                "re-run `bcextr api login`."
+            )
 
     def list_collection(self, fan_id: int) -> list[dict]:
         items = []
