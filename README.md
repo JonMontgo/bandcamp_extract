@@ -148,6 +148,19 @@ It is important to note that any files that are not music (in the zip, or in the
 source folder for `bcextr mv`/`bcextr cp`) are not moved or copied to the
 destination folder.
 
+### Fallback fields
+Some tags (like `albumartist`) aren't always set. Use `{fieldA|fieldB}` to fall
+back to `fieldB` when `fieldA` is missing, and chain as many `|`-separated
+fields as you want:
+```sh
+bcextr extract ~/Downloads/album.zip --pattern ~/Music/{albumartist|artist}/{album}/{title}
+bcextr api choose --pattern ~/Music/{albumartist|artist|genre}/{album}/{title} --format flac
+```
+Each field is tried in order and the first one with a real value wins. If none
+of them have a value, it resolves to an empty string rather than erroring.
+Referencing an unknown field name anywhere in the group (a typo, for example)
+still raises the usual "Param not found" error.
+
 ### Path-unsafe symbols in metadata
 Before substitution, every metadata value is run through
 [pathvalidate](https://github.com/thombashi/pathvalidate)'s `replace_symbol` to

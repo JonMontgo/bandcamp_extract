@@ -1,6 +1,7 @@
 import contextlib
 import glob
 import os
+import re
 import shutil
 import tempfile
 import zipfile
@@ -13,9 +14,27 @@ from tinytag.tinytag import TinyTagException
 
 from .lib import sanitize_dict_values
 
+# Matches a fallback group like {albumartist|artist} or {albumartist|artist|year}.
+# Plain single params (e.g. {artist}) have no "|" and are left for str.format.
+FALLBACK_GROUP_RE = re.compile(r"\{(\w+(?:\|\w+)+)\}")
+
 
 def _collect_song_paths(root_dir: str) -> list[str]:
     return [path for path in glob.glob(f"{root_dir}/**/*", recursive=True) if os.path.isfile(path)]
+
+
+def _resolve_fallback_groups(pattern: str, substitution_dict: dict[str, Any]) -> str:
+    def resolve(match: re.Match[str]) -> str:
+        fields = match.group(1).split("|")
+        for field in fields:
+            if field not in substitution_dict:
+                raise KeyError(field)
+            value = substitution_dict[field]
+            if value not in (None, ""):
+                return str(value).replace("{", "{{").replace("}", "}}")
+        return ""
+
+    return FALLBACK_GROUP_RE.sub(resolve, pattern)
 
 
 def _max_track_digits(song_paths: list[str]) -> int | None:
@@ -53,7 +72,8 @@ def _transfer_to_pattern(
             if max_track_digits and substitution_dict.get("track") is not None:
                 with contextlib.suppress(TypeError, ValueError):
                     substitution_dict["track"] = str(int(substitution_dict["track"])).zfill(max_track_digits)
-            new_path = pattern.format(**substitution_dict) + song_ext
+            resolved_pattern = _resolve_fallback_groups(pattern, substitution_dict)
+            new_path = resolved_pattern.format(**substitution_dict) + song_ext
             if not os.path.exists(os.path.dirname(new_path)):
                 os.makedirs(os.path.dirname(new_path))
             transfer(potential_song_path, new_path)

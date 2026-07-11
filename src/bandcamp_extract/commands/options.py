@@ -14,7 +14,9 @@ def pattern_option(f: Callable[..., Any]) -> Callable[..., Any]:
         default=DEFAULT_PATTERN,
         help=(
             "Destination path pattern, substituted with tinytag fields "
-            "(e.g. ~/Music/{albumartist}/{album}/{title}). The file "
+            "(e.g. ~/Music/{albumartist}/{album}/{title}). Use "
+            "{fieldA|fieldB|...} to fall back through fields in order when "
+            "one is missing (e.g. {albumartist|artist}). The file "
             "extension is appended automatically."
         ),
     )(f)
