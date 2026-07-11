@@ -14,9 +14,9 @@ from tinytag.tinytag import TinyTagException
 
 from .lib import sanitize_dict_values
 
-# Matches a fallback group like {albumartist|artist} or {albumartist|artist|year}.
-# Plain single params (e.g. {artist}) have no "|" and are left for str.format.
-FALLBACK_GROUP_RE = re.compile(r"\{(\w+(?:\|\w+)+)\}")
+# Matches a fallback group like {albumartist,artist} or {albumartist,artist,year}.
+# Plain single params (e.g. {artist}) have no "," and are left for str.format.
+FALLBACK_GROUP_RE = re.compile(r"\{(\w+(?:,\w+)+)\}")
 
 
 def _collect_song_paths(root_dir: str) -> list[str]:
@@ -25,7 +25,7 @@ def _collect_song_paths(root_dir: str) -> list[str]:
 
 def _resolve_fallback_groups(pattern: str, substitution_dict: dict[str, Any]) -> str:
     def resolve(match: re.Match[str]) -> str:
-        fields = match.group(1).split("|")
+        fields = match.group(1).split(",")
         for field in fields:
             if field not in substitution_dict:
                 raise KeyError(field)

@@ -149,12 +149,12 @@ source folder for `bcextr mv`/`bcextr cp`) are not moved or copied to the
 destination folder.
 
 ### Fallback fields
-Some tags (like `albumartist`) aren't always set. Use `{fieldA|fieldB}` to fall
-back to `fieldB` when `fieldA` is missing, and chain as many `|`-separated
+Some tags (like `albumartist`) aren't always set. Use `{fieldA,fieldB}` to fall
+back to `fieldB` when `fieldA` is missing, and chain as many comma-separated
 fields as you want:
 ```sh
-bcextr extract ~/Downloads/album.zip --pattern ~/Music/{albumartist|artist}/{album}/{title}
-bcextr api choose --pattern ~/Music/{albumartist|artist|genre}/{album}/{title} --format flac
+bcextr extract ~/Downloads/album.zip --pattern ~/Music/{albumartist,artist}/{album}/{title}
+bcextr api choose --pattern ~/Music/{albumartist,artist,genre}/{album}/{title} --format flac
 ```
 Each field is tried in order and the first one with a real value wins. If none
 of them have a value, it resolves to an empty string rather than erroring.
