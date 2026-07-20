@@ -103,6 +103,9 @@ This opens an `fzf` multi-select over your collection, downloads each chosen
 album in the requested format, and runs it through the same extract/rename
 logic as `bcextr extract`.
 
+In `fzf` there are two hot keys to keep in mind. `Ctrl+a` will select all and
+`Tab` will toggle a selection in the list.
+
 `--format` accepts one of `mp3-320`, `mp3-v0`, `flac`, `aac-hi`, `vorbis`,
 `alac`, `wav`, `aiff-lossless`. If omitted, you'll get a format picker
 (applied to the whole batch) instead.

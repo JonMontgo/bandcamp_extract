@@ -62,12 +62,14 @@ def list_() -> None:
 @replacement_text_option
 @strip_spaces_option
 @click.option("--format", "format_", type=click.Choice(DOWNLOAD_FORMATS), default=None)
+@click.option("--all", "all_", is_flag=True, help="Download every downloadable purchase, skipping the picker.")
 def choose(
     pattern: str,
     no_track_padding: bool,
     replacement_text: str,
     strip_spaces: bool,
     format_: str | None,
+    all_: bool,
 ) -> None:
     client = _client_from_session()
     fan_id = client.get_fan_id()
@@ -84,7 +86,10 @@ def choose(
         )
 
     labels_to_items = {_label(item): item for item in items}
-    selected_labels = iterfzf(labels_to_items.keys(), multi=True)
+    if all_:
+        selected_labels = list(labels_to_items.keys())
+    else:
+        selected_labels = iterfzf(labels_to_items.keys(), multi=True, bind={"ctrl-a": "select-all"})
     if not selected_labels:
         raise click.ClickException("No albums selected.")
 
