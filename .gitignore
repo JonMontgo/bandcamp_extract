@@ -121,3 +121,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Raw Bandcamp API samples captured by scripts/probe_bandcamp_api.py
+# (contains account-specific data, never commit)
+scripts/.api_samples/

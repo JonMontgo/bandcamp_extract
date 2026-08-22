@@ -1,9 +1,6 @@
 import click
 
-from .commands.api import api
-from .commands.cp import cp
-from .commands.extract import extract
-from .commands.mv import mv
+from .commands import api, cp, extract, mv
 
 
 @click.group()
