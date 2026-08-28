@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from bandcamp_extract.bandcamp.client import FORMAT_EXTENSIONS, BandcampClient
 from bandcamp_extract.bandcamp.types import CollectionItem, DownloadFormat
 from bandcamp_extract.extract import PatternParamError, extract_zip
-from bandcamp_extract.sync_engine.sync_entries import SyncConfig, SyncEntry
+from bandcamp_extract.sync_engine.sync_entries import SkipReason, SyncConfig, SyncEntry
 
 
 def get_item_purchase_id(item: CollectionItem) -> str | None:
@@ -74,7 +74,9 @@ class SyncEngine:
             )
 
             if existing.skip:
-                if pattern_changed:
+                if existing.skip_reason == SkipReason.REMOVED:
+                    skipped.append(existing)
+                elif pattern_changed:
                     to_sync.append(SyncPlanItem(item=item, entry=existing, reason="pattern_changed"))
                 elif format_changed:
                     to_sync.append(SyncPlanItem(item=item, entry=existing, reason="format_changed"))
@@ -129,7 +131,7 @@ class SyncEngine:
             download_path = os.path.join(tmpdir, f"download{ext}")
             client.download_file(link, download_path)
             try:
-                extract_zip(
+                synced_paths = extract_zip(
                     download_path,
                     pattern,
                     pad_track_numbers=not no_track_padding,
@@ -145,6 +147,7 @@ class SyncEngine:
                     no_track_padding=no_track_padding,
                     replacement_text=replacement_text,
                     skip=True,
+                    skip_reason=SkipReason.PATTERN_ERROR,
                 )
                 entry.last_sync = datetime.now(UTC)
                 self.record_synced_entry(entry)
@@ -158,6 +161,7 @@ class SyncEngine:
             no_track_padding=no_track_padding,
             replacement_text=replacement_text,
             skip=False,
+            synced_paths=synced_paths,
         )
         entry.last_sync = datetime.now(UTC)
         self.record_synced_entry(entry)

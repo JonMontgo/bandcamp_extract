@@ -85,3 +85,12 @@ def sync_file_option(f: Callable[..., Any]) -> Callable[..., Any]:
             "Created automatically if it does not exist."
         ),
     )(f)
+
+
+def remove_option(f: Callable[..., Any]) -> Callable[..., Any]:
+    return click.option(
+        "--remove",
+        is_flag=True,
+        default=False,
+        help="Fuzzy find and select synced items to delete from disk and mark as skipped.",
+    )(f)

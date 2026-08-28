@@ -89,9 +89,10 @@ def _transfer_to_pattern(
     transfer: Callable[[str, str], Any],
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
+) -> list[str]:
     song_paths = _collect_song_paths(root_dir)
     max_track_digits = _max_track_digits(song_paths) if pad_track_numbers else None
+    transferred_paths: list[str] = []
 
     for potential_song_path in song_paths:
         try:
@@ -108,10 +109,12 @@ def _transfer_to_pattern(
             if not os.path.exists(os.path.dirname(new_path)):
                 os.makedirs(os.path.dirname(new_path))
             transfer(potential_song_path, new_path)
+            transferred_paths.append(new_path)
         except TinyTagException:
             pass
         except KeyError as err:
             raise PatternParamError(err.args[0], pattern) from err
+    return transferred_paths
 
 
 def move_to_pattern(
@@ -120,8 +123,8 @@ def move_to_pattern(
     pad_track_numbers: bool = True,
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
-    _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.move, replacement_text, strip_spaces)
+) -> list[str]:
+    return _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.move, replacement_text, strip_spaces)
 
 
 def copy_to_pattern(
@@ -130,8 +133,8 @@ def copy_to_pattern(
     pad_track_numbers: bool = True,
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
-    _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.copy2, replacement_text, strip_spaces)
+) -> list[str]:
+    return _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.copy2, replacement_text, strip_spaces)
 
 
 def extract_zip(
@@ -140,15 +143,15 @@ def extract_zip(
     pad_track_numbers: bool = True,
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
+) -> list[str]:
     if zipfile.is_zipfile(zip_path):
         with zipfile.ZipFile(zip_path) as zipfh, tempfile.TemporaryDirectory() as tmpdirname:
             zipfh.extractall(path=tmpdirname)
-            move_to_pattern(tmpdirname, pattern, pad_track_numbers, replacement_text, strip_spaces)
+            return move_to_pattern(tmpdirname, pattern, pad_track_numbers, replacement_text, strip_spaces)
     else:
         # Standalone audio track file (e.g. single track purchase from Bandcamp)
         file_dir = os.path.dirname(os.path.abspath(zip_path))
-        move_to_pattern(file_dir, pattern, pad_track_numbers, replacement_text, strip_spaces)
+        return move_to_pattern(file_dir, pattern, pad_track_numbers, replacement_text, strip_spaces)
 
 
 extract_file = extract_zip

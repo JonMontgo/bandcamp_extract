@@ -131,6 +131,7 @@ Flags:
 - `--pattern`: destination pattern (default: `./{artist}/{album}/{title}`).
 - `--format`: audio format (`flac`, `mp3-320`, `mp3-v0`, `aac-hi`, `vorbis`, `alac`, `wav`, `aiff-lossless`). Defaults to the previous sync's format, or `mp3-320` on first run.
 - `--sync-file`: path to sync state TOML file (default: `~/.config/bcextr/sync.toml`). Automatically created if it doesn't exist. Useful for syncing different formats or destinations independently (e.g. `--sync-file ./music/.sync.toml`).
+- `--remove`: interactive fuzzy-find multi-select (`fzf`) over synced items to delete their files and folders from disk and mark them as skipped so they are not re-downloaded.
 - `--strip-spaces`: replace spaces in metadata with `--replacement-text`.
 - `--no-track-padding`: disable track number zero-padding.
 - `--replacement-text`: character used to replace path-unsafe characters (default: empty).
