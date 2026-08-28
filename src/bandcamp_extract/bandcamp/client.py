@@ -18,6 +18,17 @@ from .types import (
 PAGEDATA_RE = re.compile(r'<div id="pagedata" data-blob="([^"]*)"')
 COLLECTION_SUMMARY_URL = "https://bandcamp.com/api/fan/2/collection_summary"
 
+FORMAT_EXTENSIONS: dict[DownloadFormat, str] = {
+    "mp3-320": ".mp3",
+    "mp3-v0": ".mp3",
+    "flac": ".flac",
+    "aac-hi": ".m4a",
+    "vorbis": ".ogg",
+    "alac": ".m4a",
+    "wav": ".wav",
+    "aiff-lossless": ".aiff",
+}
+
 # Derived from the DownloadFormat Literal in types.py so there's one place
 # to edit when Bandcamp adds/removes a format.
 DOWNLOAD_FORMATS: list[DownloadFormat] = list(get_args(DownloadFormat))
@@ -117,13 +128,17 @@ class BandcampClient:
         resp.raise_for_status()
         data = DownloadPageData.model_validate(self._parse_pagedata(resp.text))
         downloads = data.download_items[0].downloads
-        if format not in downloads:
+        download_info = downloads.get(format)
+        if download_info is None or not download_info.url:
             raise ValueError(f"Format {format!r} not available; choices are {sorted(downloads)}")
-        return downloads[format].url
+        return download_info.url
 
-    def download_zip(self, url: str, dest_path: str) -> None:
+    def download_file(self, url: str, dest_path: str) -> None:
+        """Download a file (zip archive or audio track) directly to `dest_path`."""
         with self.session.get(url, stream=True) as resp:
             resp.raise_for_status()
             with open(dest_path, "wb") as fh:
                 for chunk in resp.iter_content(chunk_size=1024 * 1024):
                     fh.write(chunk)
+
+    download_zip = download_file

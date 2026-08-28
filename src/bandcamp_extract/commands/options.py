@@ -4,6 +4,8 @@ from typing import Any
 
 import click
 
+from ..bandcamp.client import DOWNLOAD_FORMATS
+
 DEFAULT_PATTERN = f"{os.getcwd()}/{{artist}}/{{album}}/{{title}}"
 
 
@@ -55,5 +57,31 @@ def strip_spaces_option(f: Callable[..., Any]) -> Callable[..., Any]:
         help=(
             "Also replace spaces in tinytag metadata with --replacement-text "
             "(spaces are left alone by default)."
+        ),
+    )(f)
+
+
+def format_option(f: Callable[..., Any]) -> Callable[..., Any]:
+    return click.option(
+        "--format",
+        "download_format",
+        type=click.Choice(DOWNLOAD_FORMATS),
+        default=None,
+        help=(
+            "Audio download format (e.g. flac, mp3-320). If omitted, "
+            "interactive commands prompt with a picker and sync defaults to "
+            "the existing sync config or 'flac'."
+        ),
+    )(f)
+
+
+def sync_file_option(f: Callable[..., Any]) -> Callable[..., Any]:
+    return click.option(
+        "--sync-file",
+        type=click.Path(dir_okay=False, writable=True),
+        default=None,
+        help=(
+            "Path to sync state TOML file (defaults to ~/.config/bcextr/sync.toml). "
+            "Created automatically if it does not exist."
         ),
     )(f)
