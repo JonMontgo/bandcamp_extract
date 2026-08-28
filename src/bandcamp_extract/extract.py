@@ -19,6 +19,37 @@ from .lib import sanitize_dict_values
 FALLBACK_GROUP_RE = re.compile(r"\{(\w+(?:,\w+)+)\}")
 
 
+class PatternParamError(click.ClickException):
+    def __init__(self, param: str, pattern: str):
+        self.param = param
+        self.pattern = pattern
+        super().__init__(f"Param {{{param}}} in pattern {pattern} not found")
+
+
+KNOWN_TAG_FIELDS = {
+    "album",
+    "albumartist",
+    "artist",
+    "audio_offset",
+    "bitdepth",
+    "bitrate",
+    "channels",
+    "comment",
+    "composer",
+    "disc",
+    "disc_total",
+    "duration",
+    "filename",
+    "filesize",
+    "genre",
+    "samplerate",
+    "title",
+    "track",
+    "track_total",
+    "year",
+}
+
+
 def _collect_song_paths(root_dir: str) -> list[str]:
     return [path for path in glob.glob(f"{root_dir}/**/*", recursive=True) if os.path.isfile(path)]
 
@@ -27,9 +58,9 @@ def _resolve_fallback_groups(pattern: str, substitution_dict: dict[str, Any]) ->
     def resolve(match: re.Match[str]) -> str:
         fields = match.group(1).split(",")
         for field in fields:
-            if field not in substitution_dict:
+            if field not in KNOWN_TAG_FIELDS and field not in substitution_dict:
                 raise KeyError(field)
-            value = substitution_dict[field]
+            value = substitution_dict.get(field)
             if value not in (None, ""):
                 return str(value).replace("{", "{{").replace("}", "}}")
         return ""
@@ -58,9 +89,10 @@ def _transfer_to_pattern(
     transfer: Callable[[str, str], Any],
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
+) -> list[str]:
     song_paths = _collect_song_paths(root_dir)
     max_track_digits = _max_track_digits(song_paths) if pad_track_numbers else None
+    transferred_paths: list[str] = []
 
     for potential_song_path in song_paths:
         try:
@@ -77,10 +109,12 @@ def _transfer_to_pattern(
             if not os.path.exists(os.path.dirname(new_path)):
                 os.makedirs(os.path.dirname(new_path))
             transfer(potential_song_path, new_path)
+            transferred_paths.append(new_path)
         except TinyTagException:
             pass
         except KeyError as err:
-            raise click.ClickException(f"Param {{{err.args[0]}}} in pattern {pattern} not found") from err
+            raise PatternParamError(err.args[0], pattern) from err
+    return transferred_paths
 
 
 def move_to_pattern(
@@ -89,8 +123,8 @@ def move_to_pattern(
     pad_track_numbers: bool = True,
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
-    _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.move, replacement_text, strip_spaces)
+) -> list[str]:
+    return _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.move, replacement_text, strip_spaces)
 
 
 def copy_to_pattern(
@@ -99,8 +133,8 @@ def copy_to_pattern(
     pad_track_numbers: bool = True,
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
-    _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.copy2, replacement_text, strip_spaces)
+) -> list[str]:
+    return _transfer_to_pattern(root_dir, pattern, pad_track_numbers, shutil.copy2, replacement_text, strip_spaces)
 
 
 def extract_zip(
@@ -109,9 +143,15 @@ def extract_zip(
     pad_track_numbers: bool = True,
     replacement_text: str = "",
     strip_spaces: bool = False,
-) -> None:
-    if not zipfile.is_zipfile(zip_path):
-        raise click.ClickException(f"{zip_path} is not a zip file!")
-    with zipfile.ZipFile(zip_path) as zipfh, tempfile.TemporaryDirectory() as tmpdirname:
-        zipfh.extractall(path=tmpdirname)
-        move_to_pattern(tmpdirname, pattern, pad_track_numbers, replacement_text, strip_spaces)
+) -> list[str]:
+    if zipfile.is_zipfile(zip_path):
+        with zipfile.ZipFile(zip_path) as zipfh, tempfile.TemporaryDirectory() as tmpdirname:
+            zipfh.extractall(path=tmpdirname)
+            return move_to_pattern(tmpdirname, pattern, pad_track_numbers, replacement_text, strip_spaces)
+    else:
+        # Standalone audio track file (e.g. single track purchase from Bandcamp)
+        file_dir = os.path.dirname(os.path.abspath(zip_path))
+        return move_to_pattern(file_dir, pattern, pad_track_numbers, replacement_text, strip_spaces)
+
+
+extract_file = extract_zip

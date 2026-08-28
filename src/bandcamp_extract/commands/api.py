@@ -6,10 +6,16 @@ import click
 from iterfzf import iterfzf
 
 from ..bandcamp import BandcampClient, load_session, save_session
-from ..bandcamp.client import DOWNLOAD_FORMATS
+from ..bandcamp.client import DOWNLOAD_FORMATS, FORMAT_EXTENSIONS
 from ..bandcamp.types import CollectionItem, DownloadFormat
 from ..extract import extract_zip
-from .options import no_track_padding_option, pattern_option, replacement_text_option, strip_spaces_option
+from .options import (
+    format_option,
+    no_track_padding_option,
+    pattern_option,
+    replacement_text_option,
+    strip_spaces_option,
+)
 
 
 def _client_from_session() -> BandcampClient:
@@ -61,14 +67,14 @@ def list_() -> None:
 @no_track_padding_option
 @replacement_text_option
 @strip_spaces_option
-@click.option("--format", "format_", type=click.Choice(DOWNLOAD_FORMATS), default=None)
+@format_option
 @click.option("--all", "all_", is_flag=True, help="Download every downloadable purchase, skipping the picker.")
 def choose(
     pattern: str,
     no_track_padding: bool,
     replacement_text: str,
     strip_spaces: bool,
-    format_: DownloadFormat | None,
+    download_format: DownloadFormat | None,
     all_: bool,
 ) -> None:
     client = _client_from_session()
@@ -92,22 +98,23 @@ def choose(
     if not selected_labels:
         raise click.ClickException("No albums selected.")
 
-    if format_ is None:
-        format_ = cast(DownloadFormat | None, iterfzf(DOWNLOAD_FORMATS))
-        if not format_:
+    if download_format is None:
+        download_format = cast(DownloadFormat | None, iterfzf(DOWNLOAD_FORMATS))
+        if not download_format:
             raise click.ClickException("No format selected.")
 
     for label in selected_labels:
         item = labels_to_items[label]
         redownload_url = item.redownload_url
         assert redownload_url is not None  # guaranteed by the filter above
-        click.echo(f"Downloading {label} ({format_})...")
-        link = client.get_download_link(redownload_url, format_)
+        click.echo(f"Downloading {label} ({download_format})...")
+        link = client.get_download_link(redownload_url, download_format)
+        ext = FORMAT_EXTENSIONS.get(download_format, ".mp3")
         with tempfile.TemporaryDirectory() as tmpdir:
-            zip_path = os.path.join(tmpdir, "album.zip")
-            client.download_zip(link, zip_path)
+            download_path = os.path.join(tmpdir, f"download{ext}")
+            client.download_file(link, download_path)
             extract_zip(
-                zip_path,
+                download_path,
                 pattern,
                 pad_track_numbers=not no_track_padding,
                 replacement_text=replacement_text,

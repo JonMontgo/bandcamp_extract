@@ -4,16 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bandcamp_extract"
-version = "0.4.8"
+version = "1.0.0"
 description = "Extract BandCamp .zip album folders to their appropriate place"
 license = { text = "MIT" }
 authors = [{ name = "Jonathan Montgomery", email = "jonathan.montgo@gmail.com" }]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "click>=8.1.0",
@@ -22,6 +24,7 @@ dependencies = [
     "iterfzf>=1.4.0",
     "pathvalidate>=3.3.1",
     "pydantic>=2.0",
+    "tomli-w>=1.0",
 ]
 
 [project.scripts]
@@ -39,7 +42,7 @@ dev = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 extend-exclude = [".claude"]
 
 [tool.ruff.lint]
@@ -55,8 +58,12 @@ select = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 files = ["src"]
 ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"

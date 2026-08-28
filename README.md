@@ -113,6 +113,29 @@ In `fzf` there are two hot keys to keep in mind. `Ctrl+a` will select all and
 This relies on Bandcamp's unofficial, undocumented collection API and may
 break if Bandcamp changes it.
 
+### `bcextr sync`
+Incrementally synchronize your entire Bandcamp collection into your music library:
+```sh
+bcextr sync --pattern ~/Music/{albumartist,artist}/{album}/{track}-{title} --format flac
+```
+
+`bcextr sync` tracks your synced purchases in `~/.config/bcextr/sync.toml` (or a custom file via `--sync-file`) and
+only downloads what needs updating:
+- **New purchases**: downloads albums and standalone tracks added to your Bandcamp collection since the last sync.
+- **Updated items**: re-downloads items whose metadata or files were modified on Bandcamp after your last sync.
+- **Format changes**: re-downloads in the new format if you switch `--format` (e.g. from `mp3-320` to `flac`).
+- **Pattern or flag changes**: re-downloads and organizes into new paths if `--pattern`, `--strip-spaces`, `--no-track-padding`, or `--replacement-text` change.
+- **Removed items**: prints a warning if an album was previously synced but is no longer present in your Bandcamp collection, while preserving your local files.
+
+Flags:
+- `--pattern`: destination pattern (default: `./{artist}/{album}/{title}`).
+- `--format`: audio format (`flac`, `mp3-320`, `mp3-v0`, `aac-hi`, `vorbis`, `alac`, `wav`, `aiff-lossless`). Defaults to the previous sync's format, or `mp3-320` on first run.
+- `--sync-file`: path to sync state TOML file (default: `~/.config/bcextr/sync.toml`). Automatically created if it doesn't exist. Useful for syncing different formats or destinations independently (e.g. `--sync-file ./music/.sync.toml`).
+- `--remove`: interactive fuzzy-find multi-select (`fzf`) over synced items to delete their files and folders from disk and mark them as skipped so they are not re-downloaded.
+- `--strip-spaces`: replace spaces in metadata with `--replacement-text`.
+- `--no-track-padding`: disable track number zero-padding.
+- `--replacement-text`: character used to replace path-unsafe characters (default: empty).
+
 ### `bcextr mv` / `bcextr cp`
 Reorganize an existing folder of music (searched recursively, however deep the
 files are nested) into a pattern-based structure. `mv` moves the files (the

@@ -17,7 +17,7 @@ recur throughout: ``a`` = album, ``t`` = track, ``p`` = merch/product,
 ``state``/``sale_item_state``).
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
@@ -44,7 +44,7 @@ def parse_bandcamp_date(v: Any) -> Any:
     """
     if v is None or isinstance(v, datetime):
         return v
-    return datetime.strptime(v, BANDCAMP_DATE_FORMAT).replace(tzinfo=timezone.utc)
+    return datetime.strptime(v, BANDCAMP_DATE_FORMAT).replace(tzinfo=UTC)
 
 
 # Drop-in datetime type: raw string -> tz-aware UTC datetime at parse time.
@@ -75,15 +75,15 @@ class ItemArt(BandcampModel):
 class UrlHints(BandcampModel):
     """Subdomain/slug used to build a bandcamp.com item URL."""
 
-    subdomain: str = Field(default="")
+    subdomain: str | None = Field(default=None)
     "Band's bandcamp subdomain (e.g. 'deathsdynamicshroud')."
     custom_domain: str | None = Field(default=None)
     "Custom domain if the band uses one."
     custom_domain_verified: bool | None = Field(default=None)
     "Whether the custom domain is verified."
-    slug: str = Field(default="")
+    slug: str | None = Field(default=None)
     "Item slug used in the URL path (e.g. 'waxen-scream')."
-    item_type: str = Field(default="")
+    item_type: str | None = Field(default=None)
     """
         Single-letter item kind on url_hints: 'a' album, 't' track. Differs from
         CollectionItem.item_type which may be a full word.
@@ -246,6 +246,16 @@ class CollectionItem(BandcampModel):
         present on the raw Bandcamp response.
     """
 
+    @property
+    def is_track(self) -> bool:
+        """True if this collection item is a standalone track rather than an album/merch."""
+        return self.item_type == "track" or self.sale_item_type == "t" or self.tralbum_type == "t"
+
+    @property
+    def is_album(self) -> bool:
+        """True if this collection item is a full album."""
+        return self.item_type == "album" or self.sale_item_type == "a" or self.tralbum_type == "a"
+
 
 class TrackListEntry(BandcampModel):
     """One track in a per-album tracklist (from `CollectionItemsResponse.tracklists`)."""
@@ -376,13 +386,13 @@ class ProfilePageData(BandcampModel):
 class DownloadInfo(BandcampModel):
     """One available format entry within a `DownloadItem.downloads` map."""
 
-    size_mb: str = Field(default="")
+    size_mb: str | None = Field(default=None)
     "Human-readable file size (e.g. '117.9MB', '1.3GB')."
-    description: str = Field(default="")
+    description: str | None = Field(default=None)
     "Human-readable format label (e.g. 'MP3 V0', 'FLAC')."
-    encoding_name: str = Field(default="")
+    encoding_name: str | None = Field(default=None)
     "Machine format key; matches the DownloadFormat literal (e.g. 'mp3-v0')."
-    url: str = Field(default="")
+    url: str | None = Field(default=None)
     "The actual zip download URL (signed, time-limited)."
 
 
