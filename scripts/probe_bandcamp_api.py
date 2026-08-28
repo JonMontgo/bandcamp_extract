@@ -13,15 +13,14 @@ import json
 import os
 import time
 
-from bandcamp_extract.bandcamp import BandcampClient, load_session
+from bandcamp_extract.bandcamp import BandcampClient
 
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".api_samples")
 
 
 def main() -> None:
     os.makedirs(OUT_DIR, exist_ok=True)
-    session = load_session()
-    client = BandcampClient(session["username"], session["identity_cookie"])
+    client = BandcampClient.from_session()
 
     # 1. Profile page pagedata blob (fan_data etc.) — fetched once via the
     #    cached profile_data property and dumped as its validated pydantic shape.

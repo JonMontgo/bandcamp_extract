@@ -5,9 +5,9 @@ from typing import cast
 import click
 from iterfzf import iterfzf
 
-from ..bandcamp import BandcampClient, load_session
 from ..bandcamp.types import DownloadFormat
 from ..extract import PatternParamError
+from ..lib import ClickAwareBandcampClient
 from ..sync_engine.sync_engine import SyncEngine
 from ..sync_engine.sync_entries import (
     SYNC_CONFIG_PATH,
@@ -24,16 +24,6 @@ from .options import (
     strip_spaces_option,
     sync_file_option,
 )
-
-
-def _client_from_session() -> BandcampClient:
-    session = load_session()
-    client = BandcampClient(session["username"], session["identity_cookie"])
-    try:
-        client.check_session()
-    except Exception as err:
-        raise click.ClickException(str(err)) from err
-    return client
 
 
 @click.command()
@@ -67,28 +57,18 @@ def sync(
             click.echo("No active sync entries found to remove.")
             return
 
-        labels_to_entries = {}
-        for e in active_entries:
-            band = e.bc_entry.band_name or "Unknown"
-            title = e.bc_entry.item_title or "Unknown"
-            base_label = f"{band} - {title} ({e.format})"
-            label = base_label
-            counter = 1
-            while label in labels_to_entries:
-                label = f"{base_label} [{e.purchase_id}-{counter}]"
-                counter += 1
-            labels_to_entries[label] = e
+        active_labels = {str(entry): entry for entry in active_entries}
 
         selected_labels = cast(
             list[str] | None,
-            iterfzf(labels_to_entries.keys(), multi=True, bind={"ctrl-a": "select-all"}),
+            iterfzf(active_labels.keys(), multi=True, bind={"ctrl-a": "select-all"}),
         )
         if not selected_labels:
             click.echo("No entries selected.")
             return
 
         for label in selected_labels:
-            entry = labels_to_entries[label]
+            entry = active_labels[label]
             removed = remove_synced_entry_files(entry)
             entry.skip = True
             entry.skip_reason = SkipReason.REMOVED
@@ -101,7 +81,7 @@ def sync(
         click.echo("Removal complete!")
         return
 
-    client = _client_from_session()
+    client = ClickAwareBandcampClient.from_session()
 
     try:
         config = SyncConfig.load(sync_path)
@@ -130,25 +110,23 @@ def sync(
     )
 
     for removed_entry in plan.removed:
-        label = f"{removed_entry.bc_entry.band_name or 'Unknown'} - {removed_entry.bc_entry.item_title or 'Unknown'}"
         msg = (
-            f"Warning: '{label}' (ID {removed_entry.purchase_id}) is in your sync config "
+            f"Warning: {removed_entry} is in your sync config "
             "but was not found in your Bandcamp collection."
         )
         click.secho(msg, fg="yellow")
 
     for skipped_entry in plan.skipped:
-        label = f"{skipped_entry.bc_entry.band_name or 'Unknown'} - {skipped_entry.bc_entry.item_title or 'Unknown'}"
         if skipped_entry.skip_reason == SkipReason.REMOVED:
-            msg = f"Skipping '{label}' (marked skipped because it was removed with --remove)."
+            msg = f"Skipping {skipped_entry} (marked skipped because it was removed with --remove)."
         elif skipped_entry.skip_reason == SkipReason.PATTERN_ERROR:
             msg = (
-                f"Skipping '{label}' (marked skipped due to missing pattern params; "
+                f"Skipping {skipped_entry} (marked skipped due to missing pattern params; "
                 "retry by updating --pattern with fallbacks)."
             )
         else:
             msg = (
-                f"Skipping '{label}' (marked skipped due to choosing remove or "
+                f"Skipping {skipped_entry} (marked skipped due to choosing remove or "
                 "sync failed due to missing pattern params; retry by updating --pattern with fallbacks)."
             )
         click.secho(msg, fg="yellow")
@@ -165,7 +143,7 @@ def sync(
 
     for plan_item in plan.to_sync:
         item = plan_item.item
-        label = f"{item.band_name or 'Unknown'} - {item.item_title or 'Unknown'}"
+        label = str(item)
         click.echo(f"Syncing [{plan_item.reason}] {label} ({target_format})...")
         try:
             engine.sync_item(

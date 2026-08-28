@@ -190,7 +190,7 @@ class SyncEngine:
         self.sync_config.format = format
 
         for plan_item in plan.to_sync:
-            label = f"{plan_item.item.band_name or 'Unknown'} - {plan_item.item.item_title or 'Unknown'}"
+            label = str(plan_item.item)
             if on_progress:
                 on_progress(f"Syncing [{plan_item.reason}] {label} ({format})...")
             try:

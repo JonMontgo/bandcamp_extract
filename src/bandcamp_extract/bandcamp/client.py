@@ -48,6 +48,30 @@ class BandcampClient:
         self._profile_data: ProfilePageData | None = None
         self._fan_id: int | None = None
 
+    @classmethod
+    def from_session(cls) -> "BandcampClient":
+        """Instantiate a client from the locally saved session (~/.config/bcextr/session.json)."""
+        from .session import load_session
+
+        session = load_session()
+        return cls(session["username"], session["identity_cookie"])
+
+    @classmethod
+    def login(cls, username: str, identity_cookie: str) -> "BandcampClient":
+        """Validate credentials and persist them to the local session file.
+
+        Triggers the profile-page fetch (validates username/cookie shape) and
+        a strong auth check on a true auth-required endpoint, then saves the
+        session on success. Returns the authenticated client.
+        """
+        from .session import save_session
+
+        client = cls(username, identity_cookie)
+        _ = client.fan_id
+        client.check_session()
+        save_session(username, identity_cookie)
+        return client
+
     def _parse_pagedata(self, html_text: str) -> dict:
         match = PAGEDATA_RE.search(html_text)
         if not match:

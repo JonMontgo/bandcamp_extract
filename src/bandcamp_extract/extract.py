@@ -152,6 +152,3 @@ def extract_zip(
         # Standalone audio track file (e.g. single track purchase from Bandcamp)
         file_dir = os.path.dirname(os.path.abspath(zip_path))
         return move_to_pattern(file_dir, pattern, pad_track_numbers, replacement_text, strip_spaces)
-
-
-extract_file = extract_zip

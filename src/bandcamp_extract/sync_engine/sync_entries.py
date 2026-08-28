@@ -43,6 +43,9 @@ class SyncEntry:
     skip_reason: SkipReason | None = None
     synced_paths: list[str] = field(default_factory=list)
 
+    def __str__(self) -> str:
+        return f"[{self.purchase_id}] ({self.format}) {self.bc_entry}"
+
     @classmethod
     def from_collection_item(
         cls,

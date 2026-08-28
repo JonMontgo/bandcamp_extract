@@ -5,10 +5,10 @@ from typing import cast
 import click
 from iterfzf import iterfzf
 
-from ..bandcamp import BandcampClient, load_session, save_session
 from ..bandcamp.client import DOWNLOAD_FORMATS, FORMAT_EXTENSIONS
-from ..bandcamp.types import CollectionItem, DownloadFormat
+from ..bandcamp.types import DownloadFormat
 from ..extract import extract_zip
+from ..lib import ClickAwareBandcampClient
 from .options import (
     format_option,
     no_track_padding_option,
@@ -16,20 +16,6 @@ from .options import (
     replacement_text_option,
     strip_spaces_option,
 )
-
-
-def _client_from_session() -> BandcampClient:
-    session = load_session()
-    client = BandcampClient(session["username"], session["identity_cookie"])
-    try:
-        client.check_session()
-    except Exception as err:
-        raise click.ClickException(str(err)) from err
-    return client
-
-
-def _label(item: CollectionItem) -> str:
-    return f"{item.band_name or 'Unknown Artist'} - {item.item_title or 'Unknown Album'}"
 
 
 @click.group()
@@ -41,24 +27,16 @@ def api() -> None:
 @click.option("--username", prompt="Bandcamp username")
 @click.option("--identity-cookie", prompt="Bandcamp 'identity' cookie value", hide_input=True)
 def login(username: str, identity_cookie: str) -> None:
-    client = BandcampClient(username, identity_cookie)
-    try:
-        _ = client.fan_id  # triggers the profile-page fetch (validates username/cookie shape)
-        client.check_session()  # strong auth check on a true auth-required endpoint
-    except Exception as err:
-        raise click.ClickException(f"Login failed: {err}") from err
-    save_session(username, identity_cookie)
+    ClickAwareBandcampClient.login(username, identity_cookie)
     click.echo("Logged in and session saved.")
 
 
 @api.command(name="list")
-def list_() -> None:
-    client = _client_from_session()
+def list_collection() -> None:
+    client = ClickAwareBandcampClient.from_session()
     items = client.list_collection()
     for item in items:
-        label = _label(item)
-        if not item.redownload_url:
-            label += " [no download]"
+        label = f"{item} [no download]" if not item.redownload_url else str(item)
         click.echo(label)
 
 
@@ -77,7 +55,7 @@ def choose(
     download_format: DownloadFormat | None,
     all_: bool,
 ) -> None:
-    client = _client_from_session()
+    client = ClickAwareBandcampClient.from_session()
     items = client.list_collection()
     if not items:
         raise click.ClickException("Your collection is empty.")
@@ -90,7 +68,7 @@ def choose(
             "a fresh identity cookie via `bcextr api login`."
         )
 
-    labels_to_items = {_label(item): item for item in items}
+    labels_to_items = {str(item): item for item in items}
     if all_:
         selected_labels = list(labels_to_items.keys())
     else:

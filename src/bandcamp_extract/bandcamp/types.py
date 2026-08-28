@@ -256,6 +256,11 @@ class CollectionItem(BandcampModel):
         """True if this collection item is a full album."""
         return self.item_type == "album" or self.sale_item_type == "a" or self.tralbum_type == "a"
 
+    def __str__(self) -> str:
+        artist = self.band_name or "Unknown Artist"
+        album = self.item_title or "Unknown Album"
+        return f"[{self.sale_item_type or '?'}-{self.sale_item_id or '?'}] {artist} - {album}"
+
 
 class TrackListEntry(BandcampModel):
     """One track in a per-album tracklist (from `CollectionItemsResponse.tracklists`)."""

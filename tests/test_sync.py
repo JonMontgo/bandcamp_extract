@@ -15,6 +15,8 @@ def _make_item(item_id: int, title: str = "Test Album", updated_dt: datetime | N
     item = CollectionItem(
         item_id=item_id,
         item_type="album",
+        sale_item_type="a",
+        sale_item_id=item_id,
         band_name="Test Band",
         item_title=title,
         redownload_url=f"https://bandcamp.com/download/{item_id}",
@@ -239,7 +241,7 @@ def test_sync_purchases_orchestration():
 
     assert len(plan.to_sync) == 1
     assert len(progress_messages) == 1
-    assert "Syncing [new] Test Band - Album 1 (flac)..." in progress_messages[0]
+    assert "Syncing [new] [a-1] Test Band - Album 1 (flac)..." in progress_messages[0]
     assert len(engine.sync_config.sync_entries) == 1
     assert engine.sync_config.sync_entries[0].purchase_id == "1"
 
@@ -331,7 +333,7 @@ def test_sync_cli_with_sync_file(monkeypatch):
         runner = CliRunner()
         song_path = os.path.join(tmpdir, "song.mp3")
         with (
-            patch("bandcamp_extract.commands.sync._client_from_session", return_value=mock_client),
+            patch("bandcamp_extract.bandcamp.client.BandcampClient.from_session", return_value=mock_client),
             patch("bandcamp_extract.sync_engine.sync_engine.extract_zip", return_value=[song_path]),
             patch("bandcamp_extract.bandcamp.client.BandcampClient.download_file"),
         ):
@@ -418,7 +420,14 @@ def test_sync_cli_remove():
         with open(track_file, "w") as fh:
             fh.write("data")
 
-        item = CollectionItem(item_id=300, band_name="Band", item_title="Album", redownload_url="https://url")
+        item = CollectionItem(
+            item_id=300,
+            sale_item_type="a",
+            sale_item_id=300,
+            band_name="Band",
+            item_title="Album",
+            redownload_url="https://url",
+        )
         entry = SyncEntry.from_collection_item(
             item=item,
             pattern=os.path.join(tmpdir, "music", "{artist}", "{album}", "{title}"),
@@ -431,7 +440,7 @@ def test_sync_cli_remove():
         config.save()
 
         runner = CliRunner()
-        with patch("bandcamp_extract.commands.sync.iterfzf", return_value=["Band - Album (mp3-320)"]):
+        with patch("bandcamp_extract.commands.sync.iterfzf", return_value=[str(entry)]):
             result = runner.invoke(
                 sync,
                 [
