@@ -60,3 +60,28 @@ def test_format_extensions_mapping():
     for fmt in DOWNLOAD_FORMATS:
         assert fmt in FORMAT_EXTENSIONS
         assert FORMAT_EXTENSIONS[fmt].startswith(".")
+
+
+def test_truncate_by_bytes_ascii():
+    from bandcamp_extract.lib import _truncate_by_bytes
+    assert _truncate_by_bytes("a" * 300, max_bytes=10) == "a" * 10
+    assert _truncate_by_bytes("hello", max_bytes=10) == "hello"
+
+
+def test_truncate_by_bytes_unicode():
+    from bandcamp_extract.lib import _truncate_by_bytes
+    # "ä" is 2 bytes: \xc3\xa4
+    assert _truncate_by_bytes("ä" * 10, max_bytes=5) == "ää"  # 4 bytes used, 5th byte was partial and ignored
+
+
+def test_sanitize_dict_values_truncates():
+    from bandcamp_extract.lib import sanitize_dict_values
+    input_dict = {
+        "artist": "a" * 300,
+        "album": ["b" * 150, "c" * 150],
+        "track": 12,
+    }
+    sanitized = sanitize_dict_values(input_dict)
+    assert len(sanitized["artist"].encode("utf-8")) == 240
+    assert len(sanitized["album"].encode("utf-8")) == 240
+    assert sanitized["track"] == 12

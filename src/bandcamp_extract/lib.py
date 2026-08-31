@@ -7,6 +7,12 @@ from pathvalidate import replace_symbol
 from .bandcamp.client import BandcampClient
 from .bandcamp.types import CollectionItem, DownloadFormat
 
+MAX_FILE_BYTES = 240
+
+
+def _truncate_by_bytes(s: str, max_bytes: int = MAX_FILE_BYTES) -> str:
+    return s.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
+
 
 # Replace path-unsafe symbols so metadata can't break the destination path
 def sanitize_for_path(string: str, replacement_text: str = "", strip_spaces: bool = False) -> str:
@@ -21,9 +27,9 @@ def sanitize_dict_values(
     sanitized = {}
     for key, value in dictionary.items():
         if type(value) is str:
-            sanitized[key] = sanitize_for_path(value, replacement_text, strip_spaces)
+            sanitized[key] = _truncate_by_bytes(sanitize_for_path(value, replacement_text, strip_spaces))
         elif type(value) is list:
-            sanitized[key] = sanitize_for_path(", ".join(value), replacement_text, strip_spaces)
+            sanitized[key] = _truncate_by_bytes(sanitize_for_path(", ".join(value), replacement_text, strip_spaces))
         else:
             sanitized[key] = value
     return sanitized

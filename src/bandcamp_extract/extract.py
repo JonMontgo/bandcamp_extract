@@ -105,7 +105,8 @@ def _transfer_to_pattern(
                 with contextlib.suppress(TypeError, ValueError):
                     substitution_dict["track"] = str(int(substitution_dict["track"])).zfill(max_track_digits)
             resolved_pattern = _resolve_fallback_groups(pattern, substitution_dict)
-            new_path = resolved_pattern.format(**substitution_dict) + song_ext
+            subed_path = resolved_pattern.format(**substitution_dict)
+            new_path = f"{subed_path}{song_ext}"
             if not os.path.exists(os.path.dirname(new_path)):
                 os.makedirs(os.path.dirname(new_path))
             transfer(potential_song_path, new_path)

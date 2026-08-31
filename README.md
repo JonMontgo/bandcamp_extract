@@ -197,3 +197,7 @@ pass `--replacement-text` to substitute something else instead, and
 ```sh
 bcextr extract ~/Downloads/album.zip --pattern ~/Music/{artist}/{album}/{title} --replacement-text "_" --strip-spaces
 ```
+
+### Shortening tags
+In rare cases, track metadata values substituted into patterns will be clipped to 240 bytes. This is to comply with
+operating system limits on individual path components (filenames and folder names). You may not think this would be needed but... [this exists](https://00000ooooo.bandcamp.com/album/--5)
