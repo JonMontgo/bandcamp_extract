@@ -42,6 +42,8 @@ KNOWN_TAG_FIELDS = {
     "filename",
     "filesize",
     "genre",
+    "is_lossless",
+    "mime_type",
     "samplerate",
     "title",
     "track",

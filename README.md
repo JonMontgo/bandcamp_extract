@@ -146,7 +146,7 @@ bcextr cp ~/Music --pattern ~/New_Music/{albumartist}/{album}/{title}
 ```
 
 ### Pattern substitution
-The pattern substitution will substitute any parameter it gets in [tinytag](https://github.com/devsnd/tinytag)
+The pattern substitution will substitute any parameter it gets in [tinytag](https://github.com/tinytag/tinytag)
 The file extension will also be added to the end of the `pattern` when moving
 the song to it's destination
 
@@ -154,20 +154,24 @@ the song to it's destination
 tag.album         # album as string
 tag.albumartist   # album artist as string
 tag.artist        # artist name as string
-tag.audio_offset  # number of bytes before audio data begins
-tag.bitrate       # bitrate in kBits/s
+tag.bitdepth      # bit depth for lossless (and some lossy) audio as int
+tag.bitrate       # bitrate in kBits/s as float
+tag.channels      # number of audio channels as int
 tag.comment       # file comment as string
-tag.composer      # composer as string 
-tag.disc          # disc number
-tag.disc_total    # the total number of discs
-tag.duration      # duration of the song in seconds
-tag.filesize      # file size in bytes
+tag.composer      # composer as string
+tag.disc          # disc number as int
+tag.disc_total    # the total number of discs as int
+tag.duration      # duration of the song in seconds as float
+tag.filename      # file name / path as string
+tag.filesize      # file size in bytes as int
 tag.genre         # genre as string
-tag.samplerate    # samples per second
-tag.title         # title of the song
-tag.track         # track number as string
-tag.track_total   # total number of tracks as string
-tag.year          # year or data as string
+tag.is_lossless   # True if lossless audio, False otherwise
+tag.mime_type     # audio MIME type / codec as string
+tag.samplerate    # samples per second as int
+tag.title         # title of the song as string
+tag.track         # track number as int (zero-padded string by default)
+tag.track_total   # total number of tracks as int
+tag.year          # year or date as string
 ```
 
 It is important to note that any files that are not music (in the zip, or in the
